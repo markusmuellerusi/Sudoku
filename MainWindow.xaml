@@ -1,0 +1,109 @@
+﻿<Window x:Class="Sudoku.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="{Binding Title}" 
+        Height="640" Width="480" 
+        MinHeight="640" MinWidth="480" 
+        Icon="Icon.png">
+    <Window.Resources>
+        <Style x:Key="ToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Padding" Value="5" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="MinWidth" Value="40" />
+        </Style>
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="10,5,10,5" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="Height" Value="40" />
+        </Style>
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ButtonStyle}">
+            <Setter Property="Background" Value="RoyalBlue" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ButtonStyle}">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+    </Window.Resources>
+    <Grid Margin="10,10,10,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="1" BorderThickness="2" BorderBrush="Black">
+            <Grid Name="GridMain">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+            </Grid>
+        </Border>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left">
+            <Button Name="ButtonOpen" Command="{Binding OpenCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}" Content="{Binding OpenLabel}"/>
+            <Button Name="ButtonSave" Command="{Binding SaveCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}" Content="{Binding SaveLabel}"/>
+            <Button Name="ButtonPrint" Click="ButtonPrint_OnClick"
+                    Style="{StaticResource SecondaryButtonStyle}" Content="{Binding PrintLabel}"/>
+            <Button Name="ButtonReset"  Command="{Binding ResetCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}" Content="{Binding ResetLabel}"/>
+            <Button Name="ButtonStart" Command="{Binding StartCommand}"
+                    CommandParameter="{Binding Delay, Mode=OneWay}"
+                    Style="{StaticResource PrimaryButtonStyle}" Content="{Binding StartLabel}"/>
+            <Button Name="ButtonStop"
+                    Command="{Binding StopCommand}"
+                    Margin="5,5,0,5"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Content="{Binding StopLabel}" />
+            <ToggleButton Name="ButtonBind" Click="ButtonBind_OnClick"
+                          IsEnabled="{Binding CanClickSolutionOrder}"
+                          Style="{StaticResource ToggleButtonStyle}" 
+                          Content="{Binding SolutionLabel}"/>
+        </StackPanel>
+
+        <Grid Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <ProgressBar Visibility="{Binding ProgressBarVisibility, Mode=OneWay}" 
+                         Value="{Binding Progress, Mode=OneWay}" Maximum="81" Minimum="0"
+                         Height="30" Margin="0,5,0,5"
+                         Foreground="MediumSeaGreen" HorizontalAlignment="Stretch"/>
+            <TextBlock Text="{Binding Progress}" FontWeight="Bold" FontSize="14"
+                       Height="30" Margin="5" Padding="5"
+                       Visibility="{Binding ProgressBarVisibility, Mode=OneWay}"
+                       VerticalAlignment="Center" TextAlignment="Center" />
+        </Grid>
+
+        <DockPanel Grid.Row="3" VerticalAlignment="Center" DockPanel.Dock="Left">
+            <Label DockPanel.Dock="Left" FontWeight="Bold" Content="{Binding DelayLabel}"/>
+            <Label DockPanel.Dock="Right" FontWeight="Bold" Content="{Binding Delay}"/>
+            <Slider Value="{Binding Delay, Mode=TwoWay}" DockPanel.Dock="Right" Margin="5,0,0,0" Width="300" 
+                    VerticalAlignment="Center" HorizontalContentAlignment="Right" 
+                    Minimum="0" Maximum="1000"/>
+        </DockPanel>
+
+    </Grid>
+</Window>
