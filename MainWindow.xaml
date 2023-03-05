@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="{Binding Title}" 
-        Height="640" Width="480" 
-        MinHeight="640" MinWidth="480" 
+        Height="640" Width="640" 
+        MinHeight="640" MinWidth="640" 
         Icon="Icon.png">
     <Window.Resources>
         <Style x:Key="ToggleButtonStyle" TargetType="ToggleButton">
@@ -75,6 +75,10 @@
             <Button Name="ButtonStart" Command="{Binding StartCommand}"
                     CommandParameter="{Binding Delay, Mode=OneWay}"
                     Style="{StaticResource PrimaryButtonStyle}" Content="{Binding StartLabel}"/>
+            <Button Name="ButtonPause" Command="{Binding PauseCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}" Content="{Binding PauseLabel}"/>
+            <Button Name="ButtonResume" Command="{Binding ResumeCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}" Content="{Binding ResumeLabel}"/>
             <Button Name="ButtonStop"
                     Command="{Binding StopCommand}"
                     Margin="5,5,0,5"

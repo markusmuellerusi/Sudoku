@@ -25,6 +25,7 @@ namespace Sudoku
 
         private bool _initiallyExecuted;
         private bool _started;
+        private bool _paused;
         private bool _canClickSolutionOrder;
         private CancellationTokenSource _cts;
         private string _path = Assembly.GetExecutingAssembly().Location.
@@ -32,6 +33,7 @@ namespace Sudoku
 
         private int _delay = 100;
         private DisplayTextTypeEnum _displayTextType = DisplayTextTypeEnum.Value;
+        private string _solutionLabel;
 
         #endregion
 
@@ -76,11 +78,15 @@ namespace Sudoku
                 Squares[sqr].Add(field);
             }
 
+            SolutionLabel = ShowOrder;
+
             // Create Commands
             OpenCommand = new AsyncCommand<object>(ExecuteOpen, CanExecuteOpenCommand);
             SaveCommand = new AsyncCommand<object>(ExecuteSave, CanExecuteSaveCommand);
             ResetCommand = new AsyncCommand<object>(ExecuteReset, CanExecuteResetCommand);
             StartCommand = new AsyncCommand<object>(ExecuteStart, CanExecuteStartCommand);
+            PauseCommand = new AsyncCommand<object>(ExecutePause, CanExecutePauseCommand);
+            ResumeCommand = new AsyncCommand<object>(ExecuteResume, CanExecuteResumeCommand);
             StopCommand = new AsyncCommand<object>(ExecuteStop, CanExecuteStopCommand);
         }
 
@@ -93,9 +99,21 @@ namespace Sudoku
         public string SaveLabel => "Save";
         public string ResetLabel => "Reset";
         public string StartLabel => "Start";
+        public string PauseLabel => "Pause";
+        public string ResumeLabel => "Resume";
         public string StartSlowMotionLabel => "Start Slow Motion";
         public string StopLabel => "Stop";
-        public string SolutionLabel => "Show Order";
+        public string SolutionLabel
+        {
+            get => _solutionLabel;
+            set
+            {
+                _solutionLabel = value;
+                OnPropertyChanged(nameof(SolutionLabel));
+            }
+        }
+        public string ShowOrder => "Show Order";
+        public string ShowValues => "Show Values";
         public string PrintLabel => "Print";
         public string DelayLabel => "Delay (ms)";
 
@@ -122,6 +140,16 @@ namespace Sudoku
             {
                 _started = value;
                 OnPropertyChanged(nameof(Started));
+                if (_started) Paused = false;
+            }
+        }
+        public bool Paused
+        {
+            get => _paused;
+            set
+            {
+                _paused = value;
+                OnPropertyChanged(nameof(Paused));
             }
         }
 
@@ -152,6 +180,15 @@ namespace Sudoku
             {
                 _displayTextType = value;
                 OnPropertyChanged(nameof(DisplayTextType));
+
+                if (_displayTextType == DisplayTextTypeEnum.SolvedOrder)
+                {
+                    SolutionLabel = ShowValues;
+                }
+                else
+                {
+                    SolutionLabel = ShowOrder;
+                }
             }
         }
 
@@ -175,6 +212,8 @@ namespace Sudoku
         public IAsyncCommand<object> SaveCommand { get; }
         public IAsyncCommand<object> ResetCommand { get; }
         public IAsyncCommand<object> StartCommand { get; }
+        public IAsyncCommand<object> PauseCommand { get; }
+        public IAsyncCommand<object> ResumeCommand { get; }
         public IAsyncCommand<object> StopCommand { get; }
 
         private bool CanExecuteOpenCommand(object parameter) => DisplayTextType == DisplayTextTypeEnum.Value;
@@ -275,6 +314,20 @@ namespace Sudoku
             await Reset();
         }
 
+        private bool CanExecutePauseCommand(object parameter) => Started && !Paused;
+        private async Task ExecutePause(object parameter)
+        {
+            Paused = true;
+            await Task.Delay(1);
+        }
+
+        private bool CanExecuteResumeCommand(object parameter) => Started && Paused;
+        private async Task ExecuteResume(object parameter)
+        {
+            Paused = false;
+            await Task.Delay(1);
+        }
+
         private bool CanExecuteStartCommand(object parameter) => Fields.Any(f => f.StartValue > 0) && 
                                                                  !Fields.All(f => f.Value.HasValue) && 
                                                                  DisplayTextType == DisplayTextTypeEnum.Value;
@@ -309,6 +362,7 @@ namespace Sudoku
             OnPropertyChanged(nameof(ProgressBarVisibility));
 
             Started = false;
+            Paused = false;
             OnPropertyChanged();
         }
 
@@ -318,6 +372,7 @@ namespace Sudoku
 
         public async Task Start(CancellationToken ct = default)
         {
+            Paused = false;
             Fields.AsParallel().ForAll(field => field.Init());
             OnPropertyChanged();
 
@@ -347,7 +402,8 @@ namespace Sudoku
         public async Task Reset(CancellationToken ct = default)
         {
             await Task.Run(() => Fields.AsParallel().ForAll(field => field.Reset()), ct);
-
+            Started = false;
+            Paused = false;
             OnPropertyChanged();
         }
 
@@ -386,6 +442,11 @@ namespace Sudoku
         {
             if (ct.IsCancellationRequested)
                 return;
+
+            while (Paused)
+            {
+                await Task.Delay(1000);
+            }
 
             solvedOrder++;
 
